@@ -1,39 +1,62 @@
 # Contributing to Snapshot
 
-Thank you for considering contributing to Snapshot! We welcome contributions from everyone. By participating in this project, you agree to abide by our code of conduct.
+Thank you for considering contributing to Snapshot! All contributions are welcome — bug fixes, new features, documentation improvements, and more.
+By participating you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Development Setup
+
+1. **Fork and clone** the repository.
+2. **Build** with the included script:
+   ```bash
+   ./build.sh
+   ```
+3. **Test manually** by running commands against a test directory:
+   ```bash
+   mkdir /tmp/test-repo && cd /tmp/test-repo
+   java -jar /path/to/snapshot.jar init
+   java -jar /path/to/snapshot.jar status
+   ```
+
+## Project Layout
+
+| File | Responsibility |
+|------|---------------|
+| `Utils.java` | Path constants, SHA-1 hashing, UTF-8 file I/O, index read/write |
+| `Index.java` | Staging area — `add`, `rm` |
+| `Commit.java` | Commit creation and commit-data parsing |
+| `Repository.java` | `init` and `status` |
+| `Log.java` | `log` history display |
+| `Main.java` | CLI entry point |
 
 ## How to Contribute
 
-1. **Fork the Repository**: Create a personal fork of the repository on GitHub.
-2. **Clone the Repository**: Clone your fork to your local machine.
-   ```bash
-   git clone https://github.com/bornebyte/snapshot.git
-   ```
-3. **Create a Branch**: Create a new branch for your changes.
+1. **Create a branch** for your change:
    ```bash
    git checkout -b feature/your-feature-name
    ```
-4. **Make Changes**: Implement your changes or fixes.
-5. **Test Your Changes**: Ensure your changes work as expected and do not break existing functionality.
-6. **Commit Your Changes**: Write clear and concise commit messages.
+2. **Make your changes.** Keep commits focused and atomic.
+3. **Verify the build passes:**
    ```bash
-   git add .
-   git commit -m "Add a brief description of your changes"
+   ./build.sh
    ```
-7. **Push Your Changes**: Push your branch to your fork.
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-8. **Open a Pull Request**: Open a pull request to the main repository. Provide a detailed description of your changes.
+4. **Write a clear commit message** that explains *why*, not just *what*.
+5. **Open a pull request** against `main` with a description of your changes.
 
-## Code of Conduct
+## Coding Standards
 
-Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+- All methods that belong to a utility class should be `static` — do not add instance state to `Utils`.
+- Use `LinkedHashMap` or `ArrayList` (not `List.of()`) for mutable collections.
+- Always use `Utils.ROOT`, `Utils.SNAPSHOT`, etc. for file paths — never hardcode strings like `".snapshot/index"`.
+- Handle binary files gracefully in any code that reads file content.
+- Keep each class focused on a single responsibility.
 
 ## Reporting Issues
 
-If you encounter any issues, please open an issue on the repository with a detailed description of the problem.
+Open an issue with:
+- The command you ran
+- The expected behaviour
+- The actual output (including any stack trace)
 
 ## Contact
 
-If you have any questions, feel free to reach out to the maintainers.
+Open an issue or start a discussion on the repository.

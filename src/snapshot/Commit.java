@@ -1,56 +1,116 @@
 package snapshot;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class Commit {
-    public static void commit(String message) throws Exception {
+/**
+ * Handles commit creation and reading commit metadata.
+ */
+public final class Commit {
 
-        Path stagingPath = Paths.get(".snapshot/objects/staging/");
-        List<Path> files;
-        List<String> hashes;
+    private Commit() {
+    }
 
-        try (Stream<Path> pathStream = Files.walk(stagingPath)) {
-            files = pathStream
-                    .filter(Files::isRegularFile)
-                    .collect(Collectors.toList());
-
-            hashes = files.stream()
-                    .map(path -> path.getFileName().toString())
-                    .collect(Collectors.toList());
+    /**
+     * Create a commit from the current staging index.
+     * Clears the index after a successful commit.
+     */
+    public static void create(String message) throws Exception {
+        ensureRepo();
+        Map<String, String> staged = Utils.readIndex();
+        if (staged.isEmpty()) {
+            System.out.println("Nothing to commit. Use 'snapshot add' to stage files.");
+            return;
         }
 
-        String commitContent = "Time : " + System.currentTimeMillis() + "\n" +
-                "Message : " + message + "\n" +
-                hashes + "\n";
-
+        // Build commit content: metadata header + one "hash filepath" line per file
+        StringBuilder sb = new StringBuilder();
+        sb.append("time=").append(System.currentTimeMillis()).append('\n');
+        sb.append("message=").append(message).append('\n');
+        for (Map.Entry<String, String> e : staged.entrySet()) {
+            sb.append(e.getValue()).append(' ').append(e.getKey()).append('\n');
+        }
+        String commitContent = sb.toString();
         String commitHash = Utils.sha1(commitContent);
 
-        FileWriter fw = new FileWriter(".snapshot/objects/refs/" + commitHash);
-        fw.write(commitContent);
-        fw.close();
+        // Write the ref file
+        Utils.writeText(Utils.REFS.resolve(commitHash), commitContent);
 
-        Files.writeString(Path.of(".snapshot/HEAD"), commitHash);
+        // Update HEAD
+        Utils.writeText(Utils.HEAD, commitHash);
 
-        Path commitDir = Paths.get(".snapshot/objects/commits/" + commitHash);
+        // Move staged objects into a per-commit directory
+        Path commitDir = Utils.COMMITS_DIR.resolve(commitHash);
         Files.createDirectories(commitDir);
-
-        try (Stream<Path> paths = Files.walk(stagingPath)) {
-            paths.filter(Files::isRegularFile)
-                    .forEach(source -> {
-                        try {
-                            Path target = commitDir.resolve(source.getFileName());
-                            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
+        for (String hash : staged.values()) {
+            Path src = Utils.STAGING.resolve(hash);
+            if (Files.exists(src)) {
+                Files.move(src, commitDir.resolve(hash), StandardCopyOption.REPLACE_EXISTING);
+            }
         }
 
-        System.out.println("Commit created: " + commitHash);
+        // Clear the staging index
+        Utils.writeText(Utils.INDEX, "");
+
+        System.out.println("commit " + commitHash);
+        System.out.println("    " + message);
+        System.out.println(staged.size() + " file(s) committed.");
+    }
+
+    /**
+     * Read the files recorded in a commit.
+     * 
+     * @return mutable map of filepath -&gt; sha1-hash
+     */
+    public static Map<String, String> readCommitFiles(String commitHash) throws IOException {
+        Map<String, String> files = new LinkedHashMap<>();
+        Path refPath = Utils.REFS.resolve(commitHash);
+        if (!Files.exists(refPath))
+            return files;
+        for (String line : Utils.readText(refPath).split("\n")) {
+            if (line.startsWith("time=") || line.startsWith("message=") || line.isBlank())
+                continue;
+            int space = line.indexOf(' ');
+            if (space < 0)
+                continue;
+            files.put(line.substring(space + 1), line.substring(0, space));
+        }
+        return files;
+    }
+
+    /** Read the commit message from a ref file. */
+    public static String readMessage(String commitHash) throws IOException {
+        for (String line : Utils.readText(Utils.REFS.resolve(commitHash)).split("\n")) {
+            if (line.startsWith("message="))
+                return line.substring("message=".length());
+        }
+        return "(no message)";
+    }
+
+    /** Read the timestamp (epoch millis) from a ref file. */
+    public static long readTime(String commitHash) throws IOException {
+        for (String line : Utils.readText(Utils.REFS.resolve(commitHash)).split("\n")) {
+            if (line.startsWith("time=")) {
+                try {
+                    return Long.parseLong(line.substring("time=".length()));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return 0L;
+    }
+
+    /** Returns the current HEAD commit hash, or empty string if none. */
+    public static String getHead() throws IOException {
+        return Utils.readText(Utils.HEAD).trim();
+    }
+
+    private static void ensureRepo() {
+        if (!Files.isDirectory(Utils.SNAPSHOT)) {
+            System.err.println("fatal: not a snapshot repository");
+            System.exit(1);
+        }
     }
 }

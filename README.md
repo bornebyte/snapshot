@@ -1,27 +1,160 @@
-# Snapshot Project
+# Snapshot
 
-## Overview
-The Snapshot project is a version control system implementation. It provides functionality to manage and track changes to files and directories, similar to Git. The project is implemented in Java and includes various components to handle commits, logs, indexing, and repository management.
+A lightweight, Git-inspired version control system written in Java.
+Snapshot lets you track changes to text files, stage them, commit snapshots, and review history — all from the command line.
+
+## Features
+
+- `init` — initialize a repository in the current directory
+- `add` — stage individual files, multiple files, or entire directory trees
+- `rm` — unstage a file without deleting it
+- `commit` — save a snapshot of all staged files
+- `status` — show staged changes, unstaged modifications, deletions, and untracked files
+- `log` — display commit history (newest first) with timestamps in local time
+- Binary files are automatically detected and skipped
 
 ## Project Structure
+
 ```
-/home/shubham/dev/snapshot
-├── build.sh
-├── data.txt
-├── manifest.txt
-├── object.txt
-├── build/
-│   └── snapshot/
+snapshot/
+├── build.sh            Build script (compiles + packages as snapshot.jar)
+├── addToPath.sh        Helper to install the 'snapshot' command system-wide
+├── manifest.txt        JAR manifest
 ├── src/
-    └── snapshot/
-        ├── Commit.java
-        ├── HashObject.java
-        ├── Index.java
-        ├── Log.java
-        ├── Main.java
-        ├── Repository.java
-        └── Utils.java
+│   └── snapshot/
+│       ├── Main.java         CLI entry point and command dispatcher
+│       ├── Utils.java        Shared path constants, SHA-1 hashing, file I/O
+│       ├── Repository.java   init and status commands
+│       ├── Index.java        Staging area management (add / rm)
+│       ├── Commit.java       Commit creation and commit-data reading
+│       └── Log.java          Commit history display
+└── .snapshot/          (created by 'snapshot init')
+    ├── HEAD            Hash of the latest commit
+    ├── index           Staging index  (hash filepath per line)
+    └── objects/
+        ├── staging/    Staged file content, keyed by SHA-1 hash
+        ├── commits/    Per-commit object directories
+        └── refs/       Commit metadata files
 ```
+
+## Getting Started
+
+### Prerequisites
+
+- Java 17 or later
+
+### Build
+
+```bash
+chmod +x build.sh
+./build.sh
+```
+
+This compiles the source and produces `snapshot.jar`.
+
+### Install system-wide (optional)
+
+```bash
+chmod +x addToPath.sh
+./addToPath.sh
+```
+
+This creates an executable wrapper and copies it to `/usr/local/bin/snapshot`.
+
+### Run without installing
+
+```bash
+java -jar /path/to/snapshot.jar <command>
+```
+
+## Usage
+
+```
+Usage: snapshot <command> [args]
+
+Commands:
+  init                Initialize a new repository
+  add <file> [...]    Stage files for commit (use '.' for all)
+  rm  <file>          Remove a file from the staging area
+  commit <message>    Commit staged changes
+  status              Show working directory and staging status
+  log                 Show commit history
+```
+
+### Example workflow
+
+```bash
+# 1. Set up a repository
+cd my-project
+snapshot init
+
+# 2. Stage files
+snapshot add .                  # stage everything
+snapshot add src/Main.java      # or stage a single file
+snapshot add a.txt b.txt c.txt  # or multiple files
+
+# 3. Review what will be committed
+snapshot status
+
+# 4. Commit
+snapshot commit "Initial commit"
+
+# 5. Make changes, then check what changed
+snapshot status
+
+# 6. Stage and commit the changes
+snapshot add .
+snapshot commit "Fix bug in parser"
+
+# 7. View history
+snapshot log
+```
+
+### snapshot status output
+
+```
+Changes to be committed:
+  new file:   src/Main.java
+  modified:   README.md
+
+Changes not staged for commit:
+  modified:   config.json
+  deleted:    old-file.txt
+
+Untracked files:
+  notes.md
+```
+
+## Repository format
+
+### Staging index (`.snapshot/index`)
+
+One entry per staged file:
+```
+<sha1-hash> <absolute-filepath>
+```
+
+### Commit ref file (`.snapshot/objects/refs/<commit-hash>`)
+
+```
+time=<epoch-millis>
+message=<commit message>
+<sha1-hash> <absolute-filepath>
+...
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Code of Conduct
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
 
 ### Key Files and Directories
 - **build.sh**: Script to build the project.
