@@ -2,7 +2,6 @@ package snapshot;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,10 +31,9 @@ public class Repository {
     public void status(Path snapshotPath) throws IOException {
 
         if (Files.isDirectory(snapshotPath)) {
-            Path stagingPath = Paths.get(".snapshot/objects/staging/");
             List<String> hashes = List.of();
 
-            try (Stream<Path> pathStream = Files.walk(stagingPath)) {
+            try (Stream<Path> pathStream = Files.walk(Utils.stagingPath)) {
                 hashes = pathStream
                         .filter(Files::isRegularFile)
                         .map(path -> path.getFileName().toString())

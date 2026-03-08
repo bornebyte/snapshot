@@ -13,6 +13,12 @@ public class Utils {
 
     public static Path currentPath = Paths.get(".").toAbsolutePath().normalize();
     public static Path snapshotPath = currentPath.resolve(".snapshot");
+    public static Path indexPath = snapshotPath.resolve("index");
+    public static Path stagingPath = snapshotPath.resolve("objects/staging");
+    public static Path commitsPath = snapshotPath.resolve("objects/commits");
+    public static Path refsPath = snapshotPath.resolve("objects/refs");
+    public static Path headPath = snapshotPath.resolve("HEAD");
+    public static Path objectsPath = snapshotPath.resolve("objects");
 
     public static String sha1(String data) throws Exception {
 
