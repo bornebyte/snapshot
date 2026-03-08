@@ -2,15 +2,18 @@ package snapshot;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class Log {
 
     public static void show() throws Exception {
 
-        String head = Files.readString(Path.of(".snapshot/HEAD"));
-
-        String commit = Files.readString(Path.of(".snapshot/objects/" + head));
-
-        System.out.println(commit);
+        Utils utils = new Utils();
+        List<String> filePaths = utils.filePathsInDirectory(".snapshot/objects/refs/");
+        for (String file : filePaths) {
+            String content = Files.readString(Path.of(file));
+            String correspondFile = utils.hashCorrespondingFile(content);
+            System.out.println(correspondFile);
+        }
     }
 }

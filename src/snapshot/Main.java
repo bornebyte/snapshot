@@ -1,8 +1,5 @@
 package snapshot;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 public class Main {
 
     public static void main(String[] args) throws Exception {
@@ -14,17 +11,14 @@ public class Main {
             return;
         }
 
-        Path currentPath = Paths.get(".").toAbsolutePath().normalize();
-        Path snapshotPath = currentPath.resolve(".snapshot");
-
         switch (args[0]) {
 
             case "init":
-                repo.init(snapshotPath);
+                repo.init(Utils.snapshotPath);
                 break;
 
             case "status":
-                repo.status(snapshotPath);
+                repo.status(Utils.snapshotPath);
                 break;
 
             case "add":
