@@ -7,15 +7,10 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Manages repository lifecycle: initialization and working-directory status.
- */
 public final class Repository {
 
     private Repository() {
     }
-
-    // ── Init ──────────────────────────────────────────────────────────────────
 
     public static void init() throws IOException {
         if (Files.isDirectory(Utils.SNAPSHOT)) {
@@ -100,11 +95,6 @@ public final class Repository {
             System.out.println("\nNo commits yet.");
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    /**
-     * Walk the working directory and return filepath -> sha1 for all text files.
-     */
     private static Map<String, String> scanWorkingDirectory() throws IOException {
         Map<String, String> map = new LinkedHashMap<>();
         try (var stream = Files.walk(Utils.ROOT)) {

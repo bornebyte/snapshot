@@ -10,10 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Static utility methods and shared path constants.
- * All methods are static — do not instantiate this class.
- */
 public final class Utils {
 
     private Utils() {
@@ -73,13 +69,6 @@ public final class Utils {
         }
     }
 
-    // ── Index I/O ─────────────────────────────────────────────────────────────
-
-    /**
-     * Read the staging index.
-     * 
-     * @return mutable map of absolute-filepath -&gt; sha1-hash
-     */
     public static Map<String, String> readIndex() throws IOException {
         Map<String, String> index = new LinkedHashMap<>();
         String content = readText(INDEX);
@@ -99,11 +88,6 @@ public final class Utils {
         return index;
     }
 
-    /**
-     * Persist the staging index to disk.
-     * 
-     * @param index map of absolute-filepath -&gt; sha1-hash
-     */
     public static void writeIndex(Map<String, String> index) throws IOException {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> e : index.entrySet()) {

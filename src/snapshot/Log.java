@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Displays the commit history, newest commit first.
- */
 public final class Log {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z")

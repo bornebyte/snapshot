@@ -2,9 +2,6 @@ package snapshot;
 
 import java.util.Arrays;
 
-/**
- * Entry point for the Snapshot CLI.
- */
 public class Main {
 
     public static void main(String[] args) {

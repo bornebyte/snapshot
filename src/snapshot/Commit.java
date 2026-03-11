@@ -5,18 +5,11 @@ import java.nio.file.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Handles commit creation and reading commit metadata.
- */
 public final class Commit {
 
     private Commit() {
     }
 
-    /**
-     * Create a commit from the current staging index.
-     * Clears the index after a successful commit.
-     */
     public static void create(String message) throws Exception {
         ensureRepo();
         Map<String, String> staged = Utils.readIndex();
@@ -59,11 +52,6 @@ public final class Commit {
         System.out.println(staged.size() + " file(s) committed.");
     }
 
-    /**
-     * Read the files recorded in a commit.
-     * 
-     * @return mutable map of filepath -&gt; sha1-hash
-     */
     public static Map<String, String> readCommitFiles(String commitHash) throws IOException {
         Map<String, String> files = new LinkedHashMap<>();
         Path refPath = Utils.REFS.resolve(commitHash);
@@ -89,7 +77,7 @@ public final class Commit {
         return "(no message)";
     }
 
-    /** Read the timestamp (epoch millis) from a ref file. */
+    /** Read the timestamp (time millis) from a ref file. */
     public static long readTime(String commitHash) throws IOException {
         for (String line : Utils.readText(Utils.REFS.resolve(commitHash)).split("\n")) {
             if (line.startsWith("time=")) {

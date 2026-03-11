@@ -17,15 +17,6 @@ public final class Index {
     private Index() {
     }
 
-    /**
-     * Stage one or more targets. Each target can be:
-     * <ul>
-     * <li>{@code "."} — recursively stage all text files in the working
-     * directory</li>
-     * <li>A file path</li>
-     * <li>A directory path — recursively stages all text files inside it</li>
-     * </ul>
-     */
     public static void add(String... targets) throws Exception {
         ensureRepo();
         List<Path> toAdd = new ArrayList<>();
@@ -92,8 +83,6 @@ public final class Index {
             System.err.println("'" + target + "' is not staged");
         }
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static boolean isInsideSnapshot(Path p) {
         return p.toAbsolutePath().startsWith(Utils.SNAPSHOT);
